@@ -1,94 +1,52 @@
-# curve25519-java
+# Curve25519
 
-A Java Curve25519 implementation that is backed by native code when available, and
-pure Java when a native library is not available. There is also a J2ME build variant.
+An implementation of Curve25519 based on Signal's using modern Java features and components of the Java Cryptographic architecture.
+Wrappers are reduced to zero and the library is fully modular. Java 11 or higher is required. It should work on any platform.
 
-## Installing
+### How to install
 
-To use on Android:
-
-```
-dependencies {
-  compile 'org.whispersystems:curve25519-android:(latest version number here)'
-}
-```
-
-To use from pure Java:
-
-```
-<dependency>
-  <groupId>org.whispersystems</groupId>
-  <artifactId>curve25519-java</artifactId>
-  <version>(latest version number here)</version>
-</dependency>
+#### Maven
+Add this dependency to your dependencies in the pom:
+```xml
+<dependencies>
+    <dependency>
+        <groupId>com.github.auties00</groupId>
+        <artifactId>curve25519</artifactId>
+        <version>1.0</version>
+    </dependency>
+</dependencies>
 ```
 
-To use from J2ME:
-
-```
-<dependency>
-  <groupId>org.whispersystems</groupId>
-  <artifactId>curve25519-j2me</artifactId>
-  <version>(latest version number here)</version>
-</dependency>
+#### Gradle
+Add this dependency to your build.gradle:
+```groovy
+implementation 'com.github.auties00:curve25519:1.0'
 ```
 
-
-The Android artifact is an AAR that contains an NDK-backed native implementation, while
-the Java artifact is a JAR that only contains the pure-Java Curve25519 provider.
-
-## Using
-
-## Obtaining an instance
-
-The caller needs to specify a `provider` when obtaining a Curve25519 instance.  There are
-four built in providers:
-
-1. `Curve25519.NATIVE` -- This is a JNI backed provider.
-1. `Curve25519.JAVA` -- This is a pure Java 7 backed provider.
-1. `Curve25519.J2ME` -- This is a J2ME compatible provider.
-1. `Curve25519.BEST` -- This is a provider that attempts to use `NATIVE`,
-   but falls back to `JAVA` if the former is unavailable.
-
-The caller specifies a provider during instance creation:
-
-```
-Curve25519 cipher = Curve25519.getInstance(Curve25519.BEST);
-```
-
-Since J2ME doesn't have built-in `SecureRandom` support, J2ME users need to supply their
-own source of `SecureRandom` by implementing the `SecureRandomProvider` interface and
-passing it in:
-
-```
-Curve25519 cipher = Curve25519.getInstance(Curve25519.J2ME, new MySecureRandomProvider());
-```
+### How to use
 
 ### Generating a Curve25519 keypair:
 
 ```
-Curve25519KeyPair keyPair = Curve25519.getInstance(Curve25519.BEST).generateKeyPair();
+var keyPair = Curve25519.generateKeyPair();
 ```
 
 ### Calculating a shared secret:
 
 ```
-Curve25519 cipher       = Curve25519.getInstance(Curve25519.BEST);
-byte[]     sharedSecret = cipher.calculateAgreement(publicKey, privateKey);
+var sharedSecret = Curve25519.calculateAgreement(publicKey, privateKey);
 ```
 
 ### Calculating a signature:
 
 ```
-Curve25519 cipher    = Curve25519.getInstance(Curve25519.BEST);
-byte[]     signature = cipher.calculateSignature(secureRandom, privateKey, message);
+var signature = Curve25519.calculateSignature(privateKey, message);
 ```
 
 ### Verifying a signature:
 
 ```
-Curve25519 cipher         = Curve25519.getInstance(Curve25519.BEST);
-boolean    validSignature = cipher.verifySignature(publicKey, message, signature);
+var isValid = Curve25519.verifySignature(publicKey, message, signature);
 ```
 
 ## License
