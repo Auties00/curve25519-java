@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.auties00</groupId>
     <artifactId>curve25519</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Curve25519 implementation based on Java 11 and the Java Cryptographic Architecture</description>
     <url>https://github.com/Auties00/curve25519-java</url>
@@ -23,7 +23,7 @@
     <scm>
         <url>https://github.com/Auties00/curve25519-java/tree/master</url>
         <connection>scm:git:https://github.com/Auties00/curve25519-java.git</connection>
-        <tag>curve25519-java-2.1.4</tag>
+        <tag>curve25519-1.1</tag>
     </scm>
     <distributionManagement>
         <snapshotRepository>
