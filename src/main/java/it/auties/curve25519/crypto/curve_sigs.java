@@ -38,7 +38,7 @@ public class curve_sigs {
                                       byte[] random) {
         ge_p3 ed_pubkey_point = new ge_p3(); /* Ed25519 pubkey point */
         byte[] ed_pubkey = new byte[32]; /* Ed25519 encoded pubkey */
-        byte[] sigbuf = new byte[msg_len + 128]; /* working buffer */
+        byte[] sigbuf = new byte[msg_len + (random != null ? 128 : 64)]; /* working buffer */
         byte sign_bit = 0;
 
         /* Convert the Curve25519 privkey to an Ed25519 public key */
