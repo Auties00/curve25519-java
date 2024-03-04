@@ -3,16 +3,18 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.auties00</groupId>
     <artifactId>curve25519</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Curve25519 implementation based on Java 11 and the Java Cryptographic Architecture</description>
     <url>https://github.com/Auties00/curve25519-java</url>
+
     <developers>
         <developer>
             <name>Alessandro Autiero</name>
             <email>alautiero@gmail.com</email>
         </developer>
     </developers>
+
     <licenses>
         <license>
             <name>MIT License</name>
@@ -20,24 +22,27 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
     <scm>
         <url>https://github.com/Auties00/curve25519-java/tree/master</url>
         <connection>scm:git:https://github.com/Auties00/curve25519-java.git</connection>
-        <tag>curve25519-java-2.1.4</tag>
+        <developerConnection>scm:ssh:https://github.com/Auties00/curve25519-java.git</developerConnection>
     </scm>
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
+
     <profiles>
         <profile>
-            <id>release-sign-artifacts</id>
+            <id>sign</id>
             <activation>
                 <property>
                     <name>performRelease</name>
@@ -46,6 +51,44 @@
             </activation>
             <build>
                 <plugins>
+                    <!-- Attach the sourcecode -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven.source.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Generate and attach javadocs from source -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven.javadoc.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <release>${java.version}</release>
+                            <failOnError>true</failOnError>
+                            <show>private</show>
+                            <debug>true</debug>
+                            <verbose>true</verbose>
+                        </configuration>
+                    </plugin>
+
+                    <!-- Sign the artifacts -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
@@ -56,6 +99,51 @@
                                 <phase>verify</phase>
                                 <goals>
                                     <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <keyname>${gpg.keyname}</keyname>
+                                    <passphraseServerId>${gpg.passphrase}</passphraseServerId>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Deploy the artifact -->
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>${nexus.staging.maven.plugin.version}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>uber-jar</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>make-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
                                 </goals>
                             </execution>
                         </executions>
@@ -81,21 +169,6 @@
 
     <build>
         <plugins>
-            <!-- Attach source code -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>${maven.source.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- Compile the project-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -121,33 +194,6 @@
                         <version>${junit.version}</version>
                     </dependency>
                 </dependencies>
-            </plugin>
-
-            <!-- Deploy the result-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>${maven.deploy.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>default-deploy</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>deploy</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>${nexus.staging.maven.plugin.version}</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
             </plugin>
         </plugins>
     </build>
