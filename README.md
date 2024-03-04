@@ -12,7 +12,7 @@ Add this dependency to your dependencies in the pom:
     <dependency>
         <groupId>com.github.auties00</groupId>
         <artifactId>curve25519</artifactId>
-        <version>1.0</version>
+        <version>1.2</version>
     </dependency>
 </dependencies>
 ```
@@ -20,7 +20,7 @@ Add this dependency to your dependencies in the pom:
 #### Gradle
 Add this dependency to your build.gradle:
 ```groovy
-implementation 'com.github.auties00:curve25519:1.0'
+implementation 'com.github.auties00:curve25519:1.2'
 ```
 
 ### How to use
