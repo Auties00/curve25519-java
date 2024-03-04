@@ -9,20 +9,27 @@ package it.auties.curve25519;
 import it.auties.curve25519.crypto.curve_sigs;
 import it.auties.curve25519.crypto.scalarmult;
 
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
+import java.math.BigInteger;
+import java.security.*;
 import java.security.interfaces.XECPrivateKey;
 import java.security.interfaces.XECPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.NamedParameterSpec;
+import java.security.spec.XECPrivateKeySpec;
+import java.security.spec.XECPublicKeySpec;
+import java.util.NoSuchElementException;
 import java.util.Objects;
-
-import static it.auties.curve25519.XecUtils.toBytes;
 
 /**
  * Utility class to create a Curve25519 key pair, public key, private key, secret or signature
  */
+@SuppressWarnings({"unused"})
 public class Curve25519 {
+    /**
+     * The name of the algorithm used for Curve25519
+     */
+    private static final String KEY_ALGORITHM = "X25519";
+
     /**
      * The length of a Curve25519 key, whether public or private
      */
@@ -42,37 +49,10 @@ public class Curve25519 {
         var random = new SecureRandom();
         var rawPrivateKey = new byte[KEY_LENGTH];
         random.nextBytes(rawPrivateKey);
-        rawPrivateKey[0]  &= 248;
+        rawPrivateKey[0] &= (byte) 248;
         rawPrivateKey[31] &= 127;
         rawPrivateKey[31] |= 64;
-        return XecUtils.toPrivateKey(rawPrivateKey);
-    }
-
-
-    /**
-     * Generates a public key from a private one
-     *
-     * @param privateKey the 32-byte Curve25519 private key
-     * @return A 32-byte Curve25519 public key
-     */
-    public static XECPublicKey forPrivateKey(PrivateKey privateKey) {
-        if(!(privateKey instanceof XECPrivateKey)){
-            throw new IllegalArgumentException("Invalid key type!");
-        }
-
-        return forPrivateKey(toBytes((XECPrivateKey) privateKey));
-    }
-
-    /**
-     * Generates a public key from a private one
-     *
-     * @param privateKey the 32-byte Curve25519 private key
-     * @return A 32-byte Curve25519 public key
-     */
-    public static XECPublicKey forPrivateKey(byte[] privateKey) {
-        var rawPublicKey = new byte[KEY_LENGTH];
-        curve_sigs.curve25519_keygen(rawPublicKey, privateKey);
-        return XecUtils.toPublicKey(rawPublicKey);
+        return createPrivateKey(rawPrivateKey);
     }
 
     /**
@@ -82,7 +62,7 @@ public class Curve25519 {
      */
     public static KeyPair randomKeyPair() {
         var privateKey = randomPrivateKey();
-        var publicKey = forPrivateKey(privateKey);
+        var publicKey = getPublicKey(privateKey);
         return new KeyPair(publicKey, privateKey);
     }
 
@@ -105,11 +85,9 @@ public class Curve25519 {
      * @return A 32-byte shared secret.
      */
     public static byte[] sharedKey(PublicKey publicKey, PrivateKey privateKey) {
-        if (!(publicKey instanceof XECPublicKey) || !(privateKey instanceof XECPrivateKey)) {
-            throw new IllegalArgumentException("Invalid key type!");
-        }
-
-        return sharedKey(toBytes((XECPublicKey) publicKey), toBytes((XECPrivateKey) privateKey));
+        checkPublicKeyType(publicKey);
+        checkPrivateKeyType(privateKey);
+        return sharedKey(readKey(publicKey), readKey(privateKey));
     }
 
     /**
@@ -120,11 +98,8 @@ public class Curve25519 {
      * @return A 32-byte shared secret.
      */
     public static byte[] sharedKey(PublicKey publicKey, byte[] privateKey) {
-        if (!(publicKey instanceof XECPublicKey)) {
-            throw new IllegalArgumentException("Invalid key type!");
-        }
-
-        return sharedKey(toBytes((XECPublicKey) publicKey), privateKey);
+        checkPublicKeyType(publicKey);
+        return sharedKey(readKey(publicKey), privateKey);
     }
 
     /**
@@ -135,11 +110,8 @@ public class Curve25519 {
      * @return A 32-byte shared secret.
      */
     public static byte[] sharedKey(byte[] publicKey, PrivateKey privateKey) {
-        if (!(privateKey instanceof XECPrivateKey)) {
-            throw new IllegalArgumentException("Invalid key type!");
-        }
-
-        return sharedKey(publicKey, toBytes((XECPrivateKey) privateKey));
+        checkPrivateKeyType(privateKey);
+        return sharedKey(publicKey, readKey(privateKey));
     }
 
     /**
@@ -204,11 +176,8 @@ public class Curve25519 {
      * @return A 64-byte signature.
      */
     public static byte[] sign(PrivateKey privateKey, byte[] message, byte[] hash) {
-        if (!(privateKey instanceof XECPrivateKey)) {
-            throw new IllegalArgumentException("Invalid private key type!");
-        }
-
-        return sign(toBytes((XECPrivateKey) privateKey), message, hash);
+        checkPrivateKeyType(privateKey);
+        return sign(readKey(privateKey), message, hash);
     }
 
     /**
@@ -251,11 +220,8 @@ public class Curve25519 {
      * @return true if valid, false if not.
      */
     public static boolean verifySignature(PublicKey publicKey, byte[] message, byte[] signature) {
-        if(!(publicKey instanceof XECPublicKey)){
-            throw new IllegalArgumentException("Invalid key type!");
-        }
-
-        return verifySignature(toBytes((XECPublicKey) publicKey), message, signature);
+        checkPublicKeyType(publicKey);
+        return verifySignature(readKey(publicKey), message, signature);
     }
 
     /**
@@ -270,6 +236,92 @@ public class Curve25519 {
         checkKey(publicKey);
         return message != null && signature != null && signature.length == SIGNATURE_LENGTH
                 && curve_sigs.curve25519_verify(signature, publicKey, message, message.length) == 0;
+    }
+
+    /**
+     * Generates a public key from a private one
+     *
+     * @param privateKey the 32-byte Curve25519 private key
+     * @return A 32-byte Curve25519 public key
+     */
+    public static XECPublicKey getPublicKey(PrivateKey privateKey) {
+        checkPrivateKeyType(privateKey);
+        return getPublicKey(readKey(privateKey));
+    }
+
+    /**
+     * Generates a public key from a private one
+     *
+     * @param privateKey the 32-byte Curve25519 private key
+     * @return A 32-byte Curve25519 public key
+     */
+    public static XECPublicKey getPublicKey(byte[] privateKey) {
+        var rawPublicKey = new byte[KEY_LENGTH];
+        curve_sigs.curve25519_keygen(rawPublicKey, privateKey);
+        return createPublicKey(rawPublicKey);
+    }
+
+    /**
+     * Converts a raw public key to a XEC public key
+     *
+     * @param rawPublicKey the raw public key to convert
+     * @return a non-null XECPublicKey
+     */
+    public static XECPublicKey createPublicKey(byte[] rawPublicKey){
+        try {
+            Objects.requireNonNull(rawPublicKey, "Public key cannot be null!");
+            var keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
+            var xecPublicKeySpec = new XECPublicKeySpec(NamedParameterSpec.X25519, new BigInteger(convertKeyToJca(rawPublicKey)));
+            return (XECPublicKey) keyFactory.generatePublic(xecPublicKeySpec);
+        } catch (NoSuchAlgorithmException | ClassCastException exception) {
+            throw new UnsupportedOperationException("Missing Curve25519 implementation", exception);
+        } catch (InvalidKeySpecException exception) {
+            throw new RuntimeException("Internal exception during key generation", exception);
+        }
+    }
+
+    /**
+     * Converts a raw private key to a XEC private key
+     *
+     * @param rawPrivateKey the raw private key to convert
+     * @return a non-null XECPrivateKey
+     */
+    public static XECPrivateKey createPrivateKey(byte[] rawPrivateKey){
+        try {
+            Objects.requireNonNull(rawPrivateKey, "Private key cannot be null!");
+            var keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
+            var xecPrivateKeySpec = new XECPrivateKeySpec(NamedParameterSpec.X25519, rawPrivateKey);
+            return (XECPrivateKey) keyFactory.generatePrivate(xecPrivateKeySpec);
+        } catch (NoSuchAlgorithmException | ClassCastException exception) {
+            throw new UnsupportedOperationException("Missing Curve25519 implementation", exception);
+        } catch (InvalidKeySpecException exception) {
+            throw new RuntimeException("Internal exception during key generation", exception);
+        }
+    }
+
+    /**
+     * Converts the input public key in a raw public key
+     *
+     * @param publicKey the public key to convert
+     * @return a non-null array of bytes
+     */
+    public static byte[] readKey(PublicKey publicKey) {
+        Objects.requireNonNull(publicKey, "Public key cannot be null!");
+        checkPublicKeyType(publicKey);
+        return convertKeyToJca(((XECPublicKey) publicKey).getU().toByteArray());
+    }
+
+    /**
+     * Converts the input private key in a raw private key
+     *
+     * @param privateKey the private key to convert
+     * @return a non-null array of bytes
+     */
+    public static byte[] readKey(PrivateKey privateKey) {
+        Objects.requireNonNull(privateKey, "Private key cannot be null!");
+        checkPrivateKeyType(privateKey);
+        return ((XECPrivateKey) privateKey).getScalar()
+                .orElseThrow(() -> new NoSuchElementException("Scalar content cannot be null!"));
     }
 
     private static byte[] randomSignatureHash(boolean deterministic) {
@@ -297,5 +349,29 @@ public class Curve25519 {
         }
 
         throw new IllegalArgumentException(String.format("Invalid hash length: expected %s, got %s", SIGNATURE_LENGTH, hash.length));
+    }
+
+    private static void checkPublicKeyType(PublicKey publicKey) {
+        if (!(publicKey instanceof XECPublicKey)) {
+            throw new IllegalArgumentException("Invalid key type!");
+        }
+    }
+
+    private static void checkPrivateKeyType(PrivateKey privateKey) {
+        if (!(privateKey instanceof XECPrivateKey)) {
+            throw new IllegalArgumentException("Invalid key type!");
+        }
+    }
+
+    // We need to copy the array because we can't modify the original one
+    // So no zero copy implementation is possible
+    private static byte[] convertKeyToJca(byte[] arr) {
+        var result = new byte[KEY_LENGTH];
+        var padding = result.length - arr.length;
+        for(var i = 0; i < arr.length; i++) {
+            result[i + padding] = arr[arr.length - (i + 1)];
+        }
+
+        return result;
     }
 }

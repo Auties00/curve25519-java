@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 public class CryptoTest {
     @Test
@@ -14,13 +15,13 @@ public class CryptoTest {
     @Test
     public void generateKeys(){
         var privateKey = Curve25519.randomPrivateKey();
-        Curve25519.forPrivateKey(privateKey);
+        Curve25519.getPublicKey(privateKey);
     }
 
     @Test
     public void calculateSharedSecret(){
         var keyPair = Curve25519.randomKeyPair();
-        Curve25519.sharedKey(keyPair);
+        System.out.printf("Shared key: %s%n", Arrays.toString(Curve25519.sharedKey(keyPair)));
     }
 
     @Test
