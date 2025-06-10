@@ -6,6 +6,7 @@ public class scalarmult {
 //CONVERT #include "fe.h"
 
     public static int crypto_scalarmult(byte[] q,
+                                        int qOffset,
                                         byte[] n,
                                         byte[] p) {
         byte[] e = new byte[32];
@@ -186,7 +187,7 @@ public class scalarmult {
 
         fe_invert.fe_invert(z2, z2);
         fe_mul.fe_mul(x2, x2, z2);
-        fe_tobytes.fe_tobytes(q, x2);
+        fe_tobytes.fe_tobytes(q, qOffset, x2);
         return 0;
     }
 

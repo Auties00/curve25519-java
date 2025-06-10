@@ -12,7 +12,7 @@ public class ge_tobytes {
         fe_invert.fe_invert(recip, h.Z);
         fe_mul.fe_mul(x, h.X, recip);
         fe_mul.fe_mul(y, h.Y, recip);
-        fe_tobytes.fe_tobytes(s, y);
+        fe_tobytes.fe_tobytes(s, 0, y);
         s[31] ^= fe_isnegative.fe_isnegative(x) << 7;
     }
 

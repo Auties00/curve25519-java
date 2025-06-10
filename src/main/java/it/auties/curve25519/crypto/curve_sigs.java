@@ -2,6 +2,7 @@ package it.auties.curve25519.crypto;
 
 public class curve_sigs {
     public static void curve25519_keygen(byte[] curve25519_pubkey_out,
+                                         int curve25519_pubkey_offset,
                                          byte[] curve25519_privkey_in) {
         ge_p3 ed = new ge_p3(); /* Ed25519 pubkey point */
         int[] ed_y_plus_one = new int[10];
@@ -16,7 +17,7 @@ public class curve_sigs {
          "edwards" y-coordinate:
 
          mont_x = (ed_y + 1) / (1 - ed_y)
-         
+
          with projective coordinates:
 
          mont_x = (ed_y + ed_z) / (ed_z - ed_y)
@@ -29,10 +30,11 @@ public class curve_sigs {
         fe_sub.fe_sub(one_minus_ed_y, ed.Z, ed.Y);
         fe_invert.fe_invert(inv_one_minus_ed_y, one_minus_ed_y);
         fe_mul.fe_mul(mont_x, ed_y_plus_one, inv_one_minus_ed_y);
-        fe_tobytes.fe_tobytes(curve25519_pubkey_out, mont_x);
+        fe_tobytes.fe_tobytes(curve25519_pubkey_out, curve25519_pubkey_offset, mont_x);
     }
 
     public static int curve25519_sign(byte[] signature_out,
+                                      int signature_out_off,
                                       byte[] curve25519_privkey,
                                       byte[] msg, int msg_len,
                                       byte[] random) {
@@ -47,13 +49,12 @@ public class curve_sigs {
         sign_bit = (byte) (ed_pubkey[31] & 0x80);
 
         /* Perform an Ed25519 signature with explicit private key */
-        sign_modified.crypto_sign_modified(sigbuf, msg, msg_len, curve25519_privkey,
-                ed_pubkey, random);
-        System.arraycopy(sigbuf, 0, signature_out, 0, 64);
+        sign_modified.crypto_sign_modified(sigbuf, msg, msg_len, curve25519_privkey, ed_pubkey, random);
+        System.arraycopy(sigbuf, 0, signature_out, signature_out_off, 64);
 
         /* Encode the sign bit into signature (in unused high bit of S) */
-        signature_out[63] &= 0x7F; /* bit should be zero already, but just in case */
-        signature_out[63] |= sign_bit;
+        signature_out[signature_out_off + 63] &= 0x7F; /* bit should be zero already, but just in case */
+        signature_out[signature_out_off + 63] |= sign_bit;
         return 0;
     }
 
@@ -87,7 +88,7 @@ public class curve_sigs {
         fe_add.fe_add(mont_x_plus_one, mont_x, one);
         fe_invert.fe_invert(inv_mont_x_plus_one, mont_x_plus_one);
         fe_mul.fe_mul(ed_y, mont_x_minus_one, inv_mont_x_plus_one);
-        fe_tobytes.fe_tobytes(ed_pubkey, ed_y);
+        fe_tobytes.fe_tobytes(ed_pubkey, 0, ed_y);
 
         /* Copy the sign bit, and remove it from signature */
         ed_pubkey[31] &= 0x7F;  /* bit should be zero already, but just in case */

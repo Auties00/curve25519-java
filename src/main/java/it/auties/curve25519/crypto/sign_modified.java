@@ -15,10 +15,10 @@ public class sign_modified {
        Uses explicit private key for nonce derivation and as scalar,
        instead of deriving both from a master key.
     */
-    static int crypto_sign_modified(
-            byte[] sm,
-            byte[] m, long n,
-            byte[] sk, byte[] pk,
+    public static int crypto_sign_modified(
+            byte[] out,
+            byte[] message, long messageLength,
+            byte[] privateKey, byte[] publicKey,
             byte[] random
     ) {
         byte[] h = new byte[64];
@@ -29,25 +29,25 @@ public class sign_modified {
             int count;
 
             /* NEW : add prefix to separate hash uses - see .h */
-            sm[0] = (byte) 0xFE;
+            out[0] = (byte) 0xFE;
             for (count = 1; count < 32; count++)
-                sm[count] = (byte) 0xFF;
+                out[count] = (byte) 0xFF;
 
-            System.arraycopy(sk, 0, sm, 32, 32);
-            System.arraycopy(m, 0, sm, 64, (int) n);
+            System.arraycopy(privateKey, 0, out, 32, 32);
+            System.arraycopy(message, 0, out, 64, (int) messageLength);
 
             /* NEW: add suffix of random data */
-            System.arraycopy(random, 0, sm, (int) (n + 64), 64);
+            System.arraycopy(random, 0, out, (int) (messageLength + 64), 64);
 
-            Sha512.calculateDigest(r, sm, n + 128);
-            return crypto_sign_modified(sm, n, sk, pk, h, r, p);
+            Sha512.calculateDigest(r, out, messageLength + 128);
+            return crypto_sign_modified(out, messageLength, privateKey, publicKey, h, r, p);
         }
 
-        System.arraycopy(m, 0, sm, 64, (int) n);
-        System.arraycopy(sk, 0, sm, 32, 32);
+        System.arraycopy(message, 0, out, 64, (int) messageLength);
+        System.arraycopy(privateKey, 0, out, 32, 32);
 
-        Sha512.calculateDigest(r, Arrays.copyOfRange(sm, 32, sm.length), n + 32);
-        return crypto_sign_modified(sm, n, sk, pk, h, r, p);
+        Sha512.calculateDigest(r, Arrays.copyOfRange(out, 32, out.length), messageLength + 32);
+        return crypto_sign_modified(out, messageLength, privateKey, publicKey, h, r, p);
     }
 
     private static int crypto_sign_modified(byte[] sm, long n, byte[] sk, byte[] pk, byte[] h, byte[] r, ge_p3 p) {

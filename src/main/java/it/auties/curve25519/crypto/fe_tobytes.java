@@ -29,7 +29,7 @@ Proof:
   so floor(2^(-255)(h + 19 2^(-25) h9 + 2^(-1))) = q.
 */
 
-    public static void fe_tobytes(byte[] s, int[] h) {
+    public static void fe_tobytes(byte[] s, int sOffset, int[] h) {
         int h0 = h[0];
         int h1 = h[1];
         int h2 = h[2];
@@ -106,38 +106,38 @@ Proof:
   Goal: Output h0+...+2^230 h9.
   */
 
-        s[0] = (byte) (h0 >> 0);
-        s[1] = (byte) (h0 >> 8);
-        s[2] = (byte) (h0 >> 16);
-        s[3] = (byte) ((h0 >> 24) | (h1 << 2));
-        s[4] = (byte) (h1 >> 6);
-        s[5] = (byte) (h1 >> 14);
-        s[6] = (byte) ((h1 >> 22) | (h2 << 3));
-        s[7] = (byte) (h2 >> 5);
-        s[8] = (byte) (h2 >> 13);
-        s[9] = (byte) ((h2 >> 21) | (h3 << 5));
-        s[10] = (byte) (h3 >> 3);
-        s[11] = (byte) (h3 >> 11);
-        s[12] = (byte) ((h3 >> 19) | (h4 << 6));
-        s[13] = (byte) (h4 >> 2);
-        s[14] = (byte) (h4 >> 10);
-        s[15] = (byte) (h4 >> 18);
-        s[16] = (byte) (h5 >> 0);
-        s[17] = (byte) (h5 >> 8);
-        s[18] = (byte) (h5 >> 16);
-        s[19] = (byte) ((h5 >> 24) | (h6 << 1));
-        s[20] = (byte) (h6 >> 7);
-        s[21] = (byte) (h6 >> 15);
-        s[22] = (byte) ((h6 >> 23) | (h7 << 3));
-        s[23] = (byte) (h7 >> 5);
-        s[24] = (byte) (h7 >> 13);
-        s[25] = (byte) ((h7 >> 21) | (h8 << 4));
-        s[26] = (byte) (h8 >> 4);
-        s[27] = (byte) (h8 >> 12);
-        s[28] = (byte) ((h8 >> 20) | (h9 << 6));
-        s[29] = (byte) (h9 >> 2);
-        s[30] = (byte) (h9 >> 10);
-        s[31] = (byte) (h9 >> 18);
+        s[sOffset] = (byte) (h0 >> 0);
+        s[sOffset + 1] = (byte) (h0 >> 8);
+        s[sOffset + 2] = (byte) (h0 >> 16);
+        s[sOffset + 3] = (byte) ((h0 >> 24) | (h1 << 2));
+        s[sOffset + 4] = (byte) (h1 >> 6);
+        s[sOffset + 5] = (byte) (h1 >> 14);
+        s[sOffset + 6] = (byte) ((h1 >> 22) | (h2 << 3));
+        s[sOffset + 7] = (byte) (h2 >> 5);
+        s[sOffset + 8] = (byte) (h2 >> 13);
+        s[sOffset + 9] = (byte) ((h2 >> 21) | (h3 << 5));
+        s[sOffset + 10] = (byte) (h3 >> 3);
+        s[sOffset + 11] = (byte) (h3 >> 11);
+        s[sOffset + 12] = (byte) ((h3 >> 19) | (h4 << 6));
+        s[sOffset + 13] = (byte) (h4 >> 2);
+        s[sOffset + 14] = (byte) (h4 >> 10);
+        s[sOffset + 15] = (byte) (h4 >> 18);
+        s[sOffset + 16] = (byte) (h5 >> 0);
+        s[sOffset + 17] = (byte) (h5 >> 8);
+        s[sOffset + 18] = (byte) (h5 >> 16);
+        s[sOffset + 19] = (byte) ((h5 >> 24) | (h6 << 1));
+        s[sOffset + 20] = (byte) (h6 >> 7);
+        s[sOffset + 21] = (byte) (h6 >> 15);
+        s[sOffset + 22] = (byte) ((h6 >> 23) | (h7 << 3));
+        s[sOffset + 23] = (byte) (h7 >> 5);
+        s[sOffset + 24] = (byte) (h7 >> 13);
+        s[sOffset + 25] = (byte) ((h7 >> 21) | (h8 << 4));
+        s[sOffset + 26] = (byte) (h8 >> 4);
+        s[sOffset + 27] = (byte) (h8 >> 12);
+        s[sOffset + 28] = (byte) ((h8 >> 20) | (h9 << 6));
+        s[sOffset + 29] = (byte) (h9 >> 2);
+        s[sOffset + 30] = (byte) (h9 >> 10);
+        s[sOffset + 31] = (byte) (h9 >> 18);
     }
 
 

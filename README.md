@@ -12,7 +12,7 @@ Add this dependency to your dependencies in the pom:
     <dependency>
         <groupId>com.github.auties00</groupId>
         <artifactId>curve25519</artifactId>
-        <version>1.2</version>
+        <version>2.0</version>
     </dependency>
 </dependencies>
 ```
@@ -20,7 +20,7 @@ Add this dependency to your dependencies in the pom:
 #### Gradle
 Add this dependency to your build.gradle:
 ```groovy
-implementation 'com.github.auties00:curve25519:1.2'
+implementation 'com.github.auties00:curve25519:2.0'
 ```
 
 ### How to use
@@ -28,19 +28,20 @@ implementation 'com.github.auties00:curve25519:1.2'
 ### Generating a Curve25519 keypair:
 
 ```
-var keyPair = Curve25519.generateKeyPair();
+var privateKey = Curve25519.randomPrivateKey();
+var publicKey = Curve25519.getPublicKey(privateKey);
 ```
 
 ### Calculating a shared secret:
 
 ```
-var sharedSecret = Curve25519.calculateAgreement(publicKey, privateKey);
+var sharedSecret = Curve25519.sharedKey(publicKey, privateKey);
 ```
 
 ### Calculating a signature:
 
 ```
-var signature = Curve25519.calculateSignature(privateKey, message);
+var signature = Curve25519.sign(privateKey, message);
 ```
 
 ### Verifying a signature:

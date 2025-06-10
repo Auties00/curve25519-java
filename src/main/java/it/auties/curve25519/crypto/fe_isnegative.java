@@ -14,7 +14,7 @@ Preconditions:
 
     public static int fe_isnegative(int[] f) {
         byte[] s = new byte[32];
-        fe_tobytes.fe_tobytes(s, f);
+        fe_tobytes.fe_tobytes(s, 0, f);
         return s[0] & 1;
     }
 
