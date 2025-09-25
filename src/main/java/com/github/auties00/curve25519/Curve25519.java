@@ -426,6 +426,25 @@ public final class Curve25519 {
     /**
      * Creates a Verifiable Random Function (VRF) signature using VEdDSA.
      *
+     * <p>This method creates a deterministic signature by default. For non-deterministic
+     * signatures, use {@link #signVrf(byte[], byte[], byte[])} with random data.</p>
+     *
+     * @param privateKey The 32-byte private key to sign with
+     * @param message The message bytes to sign
+     * @return A 64-byte Ed25519 signature
+     * @throws NullPointerException if the private key or message is null
+     * @throws IndexOutOfBoundsException if the private key is not exactly 32 bytes
+     * @throws InternalError if the signature generation fails
+     * @see #sign(byte[], byte[], byte[])
+     * @see #verifySignature(byte[], byte[], byte[])
+     */
+    public static byte[] signVrf(byte[] privateKey, byte[] message) {
+        return signVrf(privateKey, message, null);
+    }
+
+    /**
+     * Creates a Verifiable Random Function (VRF) signature using VEdDSA.
+     *
      * <p><strong>Verifiable Random Functions</strong> provide cryptographically verifiable randomness.
      * Unlike regular signatures, VRF signatures prove that the output was generated correctly
      * from the input without revealing the private key.</p>
