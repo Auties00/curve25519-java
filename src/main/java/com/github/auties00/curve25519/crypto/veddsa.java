@@ -65,8 +65,8 @@ public class veddsa {
 
         if(Z != null) {
             System.arraycopy(Z, 0, M_buf, offset, RANDLEN);
-            offset += RANDLEN;
         }
+        offset += RANDLEN;
 
         System.arraycopy(k_scalar, 0, M_buf, offset, POINTLEN);
         offset += POINTLEN;

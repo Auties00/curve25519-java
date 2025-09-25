@@ -110,7 +110,7 @@ public class Curve25519Test {
         var signatureBuffer = new byte[100];
         System.arraycopy(signature, 0, signatureBuffer, 15, 64);
 
-        boolean verified = Curve25519.verifySignature(
+        var verified = Curve25519.verifySignature(
                 publicKeyBuffer, 10,
                 messageBuffer, 40, message.length,
                 signatureBuffer, 15
@@ -243,13 +243,13 @@ public class Curve25519Test {
         var message = randomMessage();
         var validKey = Curve25519.randomPrivateKey();
 
-        byte[][] invalidKeys = {
+        var invalidKeys = new byte[][]{
                 new byte[0],
                 new byte[16],
                 new byte[31],
         };
 
-        for (byte[] invalidKey : invalidKeys) {
+        for (var invalidKey : invalidKeys) {
             assertThrows(IndexOutOfBoundsException.class, () -> Curve25519.getPublicKey(invalidKey));
             assertThrows(IndexOutOfBoundsException.class, () -> Curve25519.sign(invalidKey, message));
             assertThrows(IndexOutOfBoundsException.class, () -> Curve25519.sharedKey(invalidKey, validKey));
@@ -265,7 +265,7 @@ public class Curve25519Test {
         var privateKey = Curve25519.randomPrivateKey();
         var message = randomMessage();
 
-        byte[][] invalidSignatureRandom = {
+        var invalidSignatureRandom = new byte[][]{
                 new byte[0],
                 new byte[32],
                 new byte[63],
@@ -273,11 +273,11 @@ public class Curve25519Test {
                 new byte[128]
         };
 
-        for (byte[] invalidRandom : invalidSignatureRandom) {
+        for (var invalidRandom : invalidSignatureRandom) {
             assertThrows(IndexOutOfBoundsException.class, () -> Curve25519.sign(privateKey, message, invalidRandom));
         }
 
-        byte[][] invalidVrfRandom = {
+        var invalidVrfRandom = new byte[][]{
                 new byte[0],
                 new byte[16],
                 new byte[31],
@@ -285,7 +285,7 @@ public class Curve25519Test {
                 new byte[64]
         };
 
-        for (byte[] invalidRandom : invalidVrfRandom) {
+        for (var invalidRandom : invalidVrfRandom) {
             assertThrows(IndexOutOfBoundsException.class, () -> Curve25519.signVrf(privateKey, message, invalidRandom));
         }
     }
@@ -347,14 +347,14 @@ public class Curve25519Test {
         var message = randomMessage();
 
         var signature = Curve25519.sign(privateKey, message);
-        for (int i = 0; i < signature.length; i++) {
+        for (var i = 0; i < signature.length; i++) {
             var corrupted = signature.clone();
-            corrupted[i] ^= 0xFF;
+            corrupted[i] ^= (byte) 0xFF;
             assertFalse(Curve25519.verifySignature(publicKey, message, corrupted), "Corrupted signature should not verify (byte " + i + ")");
         }
 
         var vrfSignature = Curve25519.signVrf(privateKey, message, null);
-        for (int i = 0; i < vrfSignature.length; i += 10) {
+        for (var i = 0; i < vrfSignature.length; i += 10) {
             var corrupted = vrfSignature.clone();
             corrupted[i] ^= 0x01;
             assertThrows(SignatureException.class, () -> Curve25519.verifyVrfSignature(publicKey, message, corrupted), "Corrupted VRF signature should not verify (byte " + i + ")");
