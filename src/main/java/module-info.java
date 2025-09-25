@@ -1,3 +1,3 @@
-module it.auties.curve {
-    exports it.auties.curve25519;
+module com.github.auties00.curve25519 {
+    exports com.github.auties00.curve25519;
 }
