@@ -1,7 +1,7 @@
 # Curve25519
 
 An implementation of Curve25519 based on Signal's curve25519-java with optimizations and support for zero-copy implementations.
-Java 21 is required.
+Java 11 is required, could be upgraded if I ever try to use the new vector API to refactor the code inherited from the original implementation.
 No dependencies are used, so the project should work on any platform.
 
 ### Why not use the built-in implementation?
@@ -59,10 +59,32 @@ var signature = Curve25519.sign(privateKey, message);
 var isValid = Curve25519.verifySignature(publicKey, message, signature);
 ```
 
+### Calculating a vrf signature:
+
+```
+var signature = Curve25519.signVrf(privateKey, message);
+```
+
+### Verifying a signature:
+
+```
+var vrf = Curve25519.verifyVrfSignature(publicKey, message, signature);
+```
+
+
 ### Benchmarks
 
 Java offers a built-in Curve25519 implementation.
-
+Here is a performance comparison between this library and the built-in implementation:
+```
+Benchmark                                           Mode  Cnt    Score     Error  Units
+Curve25519Benchmark.generateKeyPair                 avgt    5   39.442 ±   6.038  us/op
+Curve25519Benchmark.calculateSharedSecret           avgt    5  271.292 ±  68.469  us/op
+Curve25519Benchmark.calculateAndVerifySignature     avgt    5  247.988 ±  26.949  us/op
+Curve25519Benchmark.calculateAndVerifyVrfSignature  avgt    5  784.672 ± 120.641  us/op
+Curve25519Benchmark.jcaGenerateKeyPair              avgt    5  119.172 ±  32.055  us/op
+Curve25519Benchmark.jcaCalculateSharedSecret        avgt    5  457.237 ±  86.077  us/op
+```
 
 ## License
 
